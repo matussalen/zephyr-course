@@ -1,0 +1,15 @@
+{
+    "terminal.integrated.profiles.windows": {
+        "Zephyr CMD": {
+            "path": "C:\\Windows\\System32\\cmd.exe",
+            "args": [
+                "/K",
+                "D:\\Zephyr\\zephyrproject\\.venv\\Scripts\\activate.bat"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "Zephyr CMD",
+
+    "python.defaultInterpreterPath": "D:\\Zephyr\\zephyrproject\\.venv\\Scripts\\python.exe",
+    "python.terminal.activateEnvironment": false
+}
