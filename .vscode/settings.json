@@ -11,5 +11,6 @@
     "terminal.integrated.defaultProfile.windows": "Zephyr CMD",
 
     "python.defaultInterpreterPath": "D:\\Zephyr\\zephyrproject\\.venv\\Scripts\\python.exe",
-    "python.terminal.activateEnvironment": false
+    "python.terminal.activateEnvironment": false,
+    "cmake.sourceDirectory": "D:/Zephyr/zephyr-course/app"
 }
