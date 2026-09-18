@@ -1,0 +1,6 @@
+board:
+  name: my_board
+  full_name: My Board From Scratch
+  vendor: matudev
+  socs:
+    - name: stm32f767xx
