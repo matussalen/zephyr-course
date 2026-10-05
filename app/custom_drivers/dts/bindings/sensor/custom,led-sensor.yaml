@@ -1,0 +1,11 @@
+description: GPIO LED exposed through the sensor API
+
+compatible: "custom,led-sensor"
+
+include: base.yaml
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: GPIO controlling the LED

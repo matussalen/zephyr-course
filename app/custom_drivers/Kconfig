@@ -1,0 +1,5 @@
+menu "Custom drivers"
+
+rsource "drivers/sensor/led_sensor/Kconfig"
+
+endmenu

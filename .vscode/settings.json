@@ -12,5 +12,12 @@
 
     "python.defaultInterpreterPath": "D:\\Zephyr\\zephyrproject\\.venv\\Scripts\\python.exe",
     "python.terminal.activateEnvironment": false,
-    "cmake.sourceDirectory": "D:/Zephyr/zephyr-course/app"
+    "cmake.sourceDirectory": "D:/Zephyr/zephyr-course/app",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "C_Cpp.default.compilerPath": "C:/Users/Usuario/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc.exe",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/../deps/zephyr/include",
+        "${workspaceFolder}/build/zephyr/include/generated",
+        "${workspaceFolder}/app/custom_drivers/include"
+    ]
 }
