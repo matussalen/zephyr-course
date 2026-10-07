@@ -3,6 +3,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/sensor.h>
+#include <led_sensor/led_sensor.h>
 #include <errno.h>
 
 struct led_sensor_config {
@@ -30,6 +31,26 @@ static int led_sensor_init(const struct device *dev)
     }
 
     data->is_on = false;
+
+    return 0;
+}
+
+int led_sensor_set_state(const struct device *dev, bool on)
+{
+    if (!device_is_ready(dev)) {
+        return -ENODEV;
+    }
+
+    const struct led_sensor_config *config = dev->config;
+    struct led_sensor_data *data = dev->data;
+
+    int ret = gpio_pin_set_dt(&config->led, on ? 1 : 0);
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    data->is_on = on;
 
     return 0;
 }

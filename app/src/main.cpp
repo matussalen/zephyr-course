@@ -2,6 +2,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/sensor.h>
+#include <led_sensor/led_sensor.h>
 
 //#define SLEEP_TIME_MS 1000
 
@@ -23,11 +24,30 @@ int main(void)
     }
 
     LOG_INF("LED sensor ready");
+  
+    int ret = led_sensor_set_state(led_sensor, true);
+
+    if (ret < 0) {
+    LOG_ERR("Custom API failed: %d", ret);
+    return 0;
+}
+
+    LOG_INF("Custom API: LED ON");
+    k_msleep(2000);
+
+    ret = led_sensor_set_state(led_sensor, false);
+
+    if (ret < 0) {
+        LOG_ERR("Custom API failed: %d", ret);
+        return 0;
+    }
+
+    LOG_INF("Custom API: LED OFF");
+    k_msleep(2000);
 
     struct sensor_value state;
-
     while (true) {
-        int ret = sensor_sample_fetch(led_sensor);
+        ret = sensor_sample_fetch(led_sensor);
 
         if (ret < 0) {
             LOG_ERR("Failed to turn LED on: %d", ret);
