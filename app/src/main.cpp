@@ -6,6 +6,8 @@
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/util.h>
 #include <errno.h>
+#include <string.h>
+
 
 
 //#define SLEEP_TIME_MS 1000
@@ -88,6 +90,44 @@ static int cmd_sensor_read(
     return 0;
 }
 
+static int cmd_sensor_set(
+    const struct shell *sh,
+    size_t argc,
+    char **argv)
+{
+    if (argc != 2) {
+        shell_error(sh, "Usage: sensor set <0|1>");
+        return -EINVAL;
+    }
+
+    bool on;
+
+    if (strcmp(argv[1], "1") == 0) {
+        on = true;
+    } else if (strcmp(argv[1], "0") == 0) {
+        on = false;
+    } else {
+        shell_error(sh, "Value must be 0 or 1");
+        return -EINVAL;
+    }
+
+    if (!device_is_ready(led_sensor)) {
+        shell_error(sh, "LED sensor is not ready");
+        return -ENODEV;
+    }
+
+    int ret = led_sensor_set_state(led_sensor, on);
+
+    if (ret < 0) {
+        shell_error(sh, "Set failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(sh, "LED %s", on ? "ON" : "OFF");
+
+    return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_sensor,
     SHELL_CMD(info, NULL,
@@ -99,6 +139,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(read, NULL,
               "Read the result and turn LED off",
               cmd_sensor_read),
+    SHELL_CMD_ARG(set, NULL,
+              "Set LED state: 0=OFF, 1=ON",
+              cmd_sensor_set, 2, 0),
     SHELL_SUBCMD_SET_END
 );
 
