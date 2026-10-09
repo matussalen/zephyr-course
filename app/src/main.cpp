@@ -3,6 +3,10 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/sensor.h>
 #include <led_sensor/led_sensor.h>
+#include <zephyr/shell/shell.h>
+#include <zephyr/sys/util.h>
+#include <errno.h>
+
 
 //#define SLEEP_TIME_MS 1000
 
@@ -14,6 +18,98 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 static const struct device *const led_sensor =
     DEVICE_DT_GET(DT_NODELABEL(led_sensor));
+
+static int cmd_sensor_info(
+    const struct shell *sh,
+    size_t argc,
+    char **argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    shell_print(sh, "Device: %s", led_sensor->name);
+    shell_print(sh, "Ready: %s",
+                device_is_ready(led_sensor) ? "yes" : "no");
+
+    return 0;
+}
+
+static int cmd_sensor_fetch(
+    const struct shell *sh,
+    size_t argc,
+    char **argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    if (!device_is_ready(led_sensor)) {
+        shell_error(sh, "LED sensor is not ready");
+        return -ENODEV;
+    }
+
+    int ret = sensor_sample_fetch(led_sensor);
+
+    if (ret < 0) {
+        shell_error(sh, "Fetch failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(sh, "Fetch completed: LED ON");
+
+    return 0;
+}
+
+static int cmd_sensor_read(
+    const struct shell *sh,
+    size_t argc,
+    char **argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    if (!device_is_ready(led_sensor)) {
+        shell_error(sh, "LED sensor is not ready");
+        return -ENODEV;
+    }
+
+    struct sensor_value state;
+
+    int ret = sensor_channel_get(
+        led_sensor, SENSOR_CHAN_PRIV_START, &state);
+
+    if (ret < 0) {
+        shell_error(sh, "Read failed: %d", ret);
+        return ret;
+    }
+
+    shell_print(sh, "Read completed: LED OFF, state: %d",
+                state.val1);
+
+    return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    sub_sensor,
+    SHELL_CMD(info, NULL,
+              "Show device name and ready state",
+              cmd_sensor_info),
+    SHELL_CMD(fetch, NULL,
+              "Fetch a sample and turn LED on",
+              cmd_sensor_fetch),
+    SHELL_CMD(read, NULL,
+              "Read the result and turn LED off",
+              cmd_sensor_read),
+    SHELL_SUBCMD_SET_END
+);
+
+SHELL_CMD_REGISTER(
+    sensor,
+    &sub_sensor,
+    "LED sensor commands",
+    NULL
+);
+
+
 
 int main(void)
 {
@@ -45,29 +141,29 @@ int main(void)
     LOG_INF("Custom API: LED OFF");
     k_msleep(2000);
 
-    struct sensor_value state;
-    while (true) {
-        ret = sensor_sample_fetch(led_sensor);
+    // struct sensor_value state;
+    // while (true) {
+    //     ret = sensor_sample_fetch(led_sensor);
 
-        if (ret < 0) {
-            LOG_ERR("Failed to turn LED on: %d", ret);
-            return 0;
-        }
+    //     if (ret < 0) {
+    //         LOG_ERR("Failed to turn LED on: %d", ret);
+    //         return 0;
+    //     }
 
-        LOG_INF("LED ON");
-        k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
+    //     LOG_INF("LED ON");
+    //     k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
 
-        ret = sensor_channel_get(
-            led_sensor, SENSOR_CHAN_PRIV_START, &state);
+    //     ret = sensor_channel_get(
+    //         led_sensor, SENSOR_CHAN_PRIV_START, &state);
 
-        if (ret < 0) {
-            LOG_ERR("Failed to turn LED off: %d", ret);
-            return 0;
-        }
+    //     if (ret < 0) {
+    //         LOG_ERR("Failed to turn LED off: %d", ret);
+    //         return 0;
+    //     }
 
-        LOG_INF("LED OFF, state: %d", state.val1);
-        k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
-    }
+    //     LOG_INF("LED OFF, state: %d", state.val1);
+    //     k_msleep(CONFIG_APP_HEARTBEAT_PERIOD_MS);
+    // }
 
     return 0;
 
