@@ -1,0 +1,12 @@
+diff --git a/scripts/pylib/twister/twisterlib/handlers.py b/scripts/pylib/twister/twisterlib/handlers.py
+--- a/scripts/pylib/twister/twisterlib/handlers.py
++++ b/scripts/pylib/twister/twisterlib/handlers.py
+@@ -1286,7 +1286,7 @@ class QEMUWinHandler(Handler):
+                     self.pid = int(pid_file.read())
+ 
+             try:
+-                c = queue.get_nowait()
++                c = queue.get(timeout=0.1)
+             except Empty:
+                 continue
+             try:
