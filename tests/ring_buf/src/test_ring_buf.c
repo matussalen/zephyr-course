@@ -47,7 +47,12 @@ ZTEST(ring_buf_init, test_reinit_clears_state)
 	 * verify the buffer is empty and count is 0.
 	 * See TEST_SPEC.md "Suite ring_buf_init" #2.
 	 */
-	ztest_test_skip();
+	zassert_ok(rb_push(99), "Push should succeed");
+
+    zassert_ok(rb_init(4), "Reinitialization should succeed");
+
+    zassert_true(rb_is_empty(), "Reinitialized buffer must be empty");
+    zassert_equal(rb_count(), 0, "Reinitialized buffer count must be 0");
 }
 
 /*
@@ -64,7 +69,14 @@ ZTEST(ring_buf_push_pop, test_single_push_pop)
 	/* TODO(l8-task1): rb_push(42), rb_pop(&v) -> v == 42, buffer empty after.
 	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #1.
 	 */
-	ztest_test_skip();
+	int value = 0;
+
+    zassert_ok(rb_push(42), "Push should succeed");
+
+    zassert_ok(rb_pop(&value), "Pop should succeed");
+
+    zassert_equal(value, 42, "Popped value must be 42");
+    zassert_true(rb_is_empty(), "Buffer must be empty after pop");
 }
 
 ZTEST(ring_buf_push_pop, test_fifo_order)
@@ -73,7 +85,22 @@ ZTEST(ring_buf_push_pop, test_fifo_order)
 	 * and verify the values come out as 1, 2, 3 in that order.
 	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #2.
 	 */
-	ztest_test_skip();
+	int value = 0;
+
+    zassert_ok(rb_push(1), "Push 1 should succeed");
+    zassert_ok(rb_push(2), "Push 2 should succeed");
+    zassert_ok(rb_push(3), "Push 3 should succeed");
+
+    zassert_ok(rb_pop(&value), "First pop should succeed");
+    zassert_equal(value, 1, "First value must be 1");
+
+    zassert_ok(rb_pop(&value), "Second pop should succeed");
+    zassert_equal(value, 2, "Second value must be 2");
+
+    zassert_ok(rb_pop(&value), "Third pop should succeed");
+    zassert_equal(value, 3, "Third value must be 3");
+
+    zassert_true(rb_is_empty(), "Buffer must be empty after three pops");
 }
 
 ZTEST(ring_buf_push_pop, test_push_full_returns_enospc)
@@ -82,7 +109,18 @@ ZTEST(ring_buf_push_pop, test_push_full_returns_enospc)
 	 * one more value -> -ENOSPC.
 	 * See TEST_SPEC.md "Suite ring_buf_push_pop" #3.
 	 */
-	ztest_test_skip();
+	zassert_ok(rb_push(1), "Push 1 should succeed");
+    zassert_ok(rb_push(2), "Push 2 should succeed");
+    zassert_ok(rb_push(3), "Push 3 should succeed");
+    zassert_ok(rb_push(4), "Push 4 should succeed");
+
+    zassert_true(rb_is_full(), "Buffer must be full");
+
+    zassert_equal(rb_push(99), -ENOSPC,
+                  "Push to a full buffer must return -ENOSPC");
+
+    zassert_equal(rb_count(), 4,
+                  "Rejected push must not change the count");
 }
 
 /*
@@ -100,7 +138,20 @@ ZTEST(ring_buf_boundaries, test_peek_does_not_consume)
 	 * -> v == 7; rb_count() still == 1.
 	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #1.
 	 */
-	ztest_test_skip();
+	int value = 0;
+
+    zassert_ok(rb_push(7), "Push should succeed");
+
+    zassert_ok(rb_peek(&value), "First peek should succeed");
+    zassert_equal(value, 7, "First peek must return 7");
+
+    value = 0;
+
+    zassert_ok(rb_peek(&value), "Second peek should succeed");
+    zassert_equal(value, 7, "Second peek must return 7");
+
+    zassert_equal(rb_count(), 1,
+                  "Peek must not consume the element");
 }
 
 ZTEST(ring_buf_boundaries, test_pop_null_returns_einval)
@@ -108,7 +159,8 @@ ZTEST(ring_buf_boundaries, test_pop_null_returns_einval)
 	/* TODO(l8-task1): rb_pop(NULL) -> -EINVAL.
 	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #2.
 	 */
-	ztest_test_skip();
+	 zassert_equal(rb_pop(NULL), -EINVAL,
+                  "Pop with NULL must return -EINVAL");
 }
 
 ZTEST(ring_buf_boundaries, test_is_full_after_fill)
@@ -116,5 +168,11 @@ ZTEST(ring_buf_boundaries, test_is_full_after_fill)
 	/* TODO(l8-task1): push 4 values -> rb_is_full() == true, rb_count() == 4.
 	 * See TEST_SPEC.md "Suite ring_buf_boundaries" #3.
 	 */
-	ztest_test_skip();
+	zassert_ok(rb_push(1), "Push 1 should succeed");
+    zassert_ok(rb_push(2), "Push 2 should succeed");
+    zassert_ok(rb_push(3), "Push 3 should succeed");
+    zassert_ok(rb_push(4), "Push 4 should succeed");
+
+    zassert_true(rb_is_full(), "Buffer must be full");
+    zassert_equal(rb_count(), 4, "Buffer count must be 4");
 }
