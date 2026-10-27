@@ -7,6 +7,7 @@
 #include <zephyr/sys/util.h>
 #include <errno.h>
 #include <string.h>
+#include <zephyr/shell/shell_string_conv.h>
 
 
 
@@ -95,21 +96,29 @@ static int cmd_sensor_set(
     size_t argc,
     char **argv)
 {
+    const long min_value = 0;
+    const long max_value = 1;
+
     if (argc != 2) {
         shell_error(sh, "Usage: sensor set <0|1>");
         return -EINVAL;
     }
 
-    bool on;
+    int err = 0;
+    long value = shell_strtol(argv[1], 10, &err);
 
-    if (strcmp(argv[1], "1") == 0) {
-        on = true;
-    } else if (strcmp(argv[1], "0") == 0) {
-        on = false;
-    } else {
-        shell_error(sh, "Value must be 0 or 1");
-        return -EINVAL;
+    if (err != 0) {
+        shell_error(sh, "Invalid integer: %s", argv[1]);
+        return err;
     }
+
+    if (value < min_value || value > max_value) {
+        shell_error(sh, "Value must be between %ld and %ld",
+                    min_value, max_value);
+        return -ERANGE;
+    }
+
+    bool on = (value == 1);   
 
     if (!device_is_ready(led_sensor)) {
         shell_error(sh, "LED sensor is not ready");
@@ -141,7 +150,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
               cmd_sensor_read),
     SHELL_CMD_ARG(set, NULL,
               "Set LED state: 0=OFF, 1=ON",
-              cmd_sensor_set, 2, 0),
+              cmd_sensor_set, 1, 1),
     SHELL_SUBCMD_SET_END
 );
 
